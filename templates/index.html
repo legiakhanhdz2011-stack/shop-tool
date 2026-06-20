@@ -3,149 +3,96 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Cửa Hàng Tool Tự Động</title>
-    <style>
-        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background: #f4f7f6; margin: 0; padding: 20px; }
-        h1 { text-align: center; color: #333; margin-bottom: 30px; }
-        
-        /* Kệ hàng (Grid Layout) */
-        .store-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(250px, 1fr)); gap: 20px; max-width: 1000px; margin: 0 auto; }
-        .product-card { background: white; padding: 20px; border-radius: 12px; box-shadow: 0 4px 6px rgba(0,0,0,0.05); text-align: center; transition: transform 0.2s; }
-        .product-card:hover { transform: translateY(-5px); box-shadow: 0 8px 15px rgba(0,0,0,0.1); }
-        .product-icon { font-size: 50px; margin-bottom: 15px; }
-        .product-name { font-size: 18px; font-weight: bold; color: #2c3e50; margin-bottom: 10px; }
-        .product-price { color: #e74c3c; font-size: 20px; font-weight: bold; margin-bottom: 20px; }
-        .btn-buy { background: #007bff; color: white; border: none; padding: 10px 20px; border-radius: 6px; font-size: 16px; cursor: pointer; width: 100%; font-weight: bold; }
-        .btn-buy:hover { background: #0056b3; }
-
-        /* Popup Thanh Toán (Modal) */
-        .modal-overlay { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.6); justify-content: center; align-items: center; z-index: 1000; }
-        .modal-content { background: white; padding: 30px; border-radius: 12px; width: 90%; max-width: 350px; text-align: center; position: relative; }
-        .close-btn { position: absolute; top: 10px; right: 15px; font-size: 24px; cursor: pointer; color: #888; }
-        .qr-image { width: 100%; border-radius: 10px; border: 2px solid #eee; margin: 15px 0; }
-        #modal-msg { margin-top: 15px; font-weight: bold; }
-    </style>
+    <title>Shop Bán Tool Tự Động</title>
+    <script src="https://cdn.tailwindcss.com"></script>
 </head>
-<body>
+<body class="bg-gray-900 text-white font-sans min-h-screen flex flex-col items-center justify-center p-4">
 
-    <h1>🛒 Gian Hàng Phần Mềm</h1>
+    {% if not username %}
+    <div class="bg-gray-800 p-8 rounded-2xl shadow-2xl w-full max-w-md border border-gray-700">
+        <h1 class="text-3xl font-bold text-center text-teal-400 mb-6">ĐĂNG NHẬP HỆ THỐNG</h1>
+        
+        <form action="/login" method="POST" class="space-y-4">
+            <input type="text" name="username" placeholder="Tên đăng nhập" required 
+                   class="w-full px-4 py-3 bg-gray-700 rounded-lg focus:outline-none focus:ring-2 focus:ring-teal-400">
+            <input type="password" name="password" placeholder="Mật khẩu" required 
+                   class="w-full px-4 py-3 bg-gray-700 rounded-lg focus:outline-none focus:ring-2 focus:ring-teal-400">
+            <button type="submit" class="w-full py-3 bg-teal-500 hover:bg-teal-400 text-gray-900 font-bold rounded-lg transition duration-300">
+                ĐĂNG NHẬP
+            </button>
+        </form>
 
-    <div class="store-grid">
-        {% for pid, item in products.items() %}
-        <div class="product-card">
-            <div class="product-icon">📦</div>
-            <div class="product-name">{{ item.name }}</div>
-            <div class="product-price">{{ "{:,.0f}".format(item.price) }} VNĐ</div>
-            <button class="btn-buy" onclick="openPayment('{{ pid }}', {{ item.price }}, '{{ item.name }}')">Mua Ngay</button>
+        <div class="mt-6 border-t border-gray-700 pt-6">
+            <h2 class="text-center text-gray-400 mb-4">Hoặc tạo tài khoản mới</h2>
+            <form action="/register" method="POST" class="space-y-4">
+                <input type="text" name="username" placeholder="Tên đăng nhập mới" required 
+                       class="w-full px-4 py-2 bg-gray-700 rounded-lg text-sm">
+                <input type="password" name="password" placeholder="Mật khẩu mới" required 
+                       class="w-full px-4 py-2 bg-gray-700 rounded-lg text-sm">
+                <button type="submit" class="w-full py-2 bg-gray-600 hover:bg-gray-500 font-bold rounded-lg transition duration-300">
+                    ĐĂNG KÝ
+                </button>
+            </form>
         </div>
-        {% endfor %}
     </div>
+    {% endif %}
 
-    <div class="modal-overlay" id="paymentModal">
-        <div class="modal-content">
-            <span class="close-btn" onclick="closeModal()">×</span>
-            <h3 id="modal-title">Thanh Toán</h3>
-            <p style="color: #666; font-size: 14px;">Mã đơn: <b id="display-order-id" style="color: black;"></b></p>
+    {% if username %}
+    <div class="w-full max-w-4xl">
+        <div class="flex justify-between items-center bg-gray-800 p-4 rounded-xl shadow-lg mb-8 border border-gray-700">
+            <h2 class="text-xl font-bold text-teal-400">Xin chào, {{ username }}! 🖐</h2>
+            <a href="/logout" class="px-4 py-2 bg-red-500 hover:bg-red-600 text-white font-bold rounded-lg transition">Đăng Xuất</a>
+        </div>
+
+        <div class="bg-gray-800 rounded-2xl overflow-hidden shadow-2xl border border-gray-700 text-center p-8">
+            <div class="text-6xl mb-4">🚀</div>
+            <h3 class="text-3xl font-bold mb-2">Tool System Mod Premium</h3>
+            <p class="text-gray-400 mb-6">Tự động hóa tác vụ, siêu nhẹ, không cần cài đặt.</p>
+            <div class="text-4xl font-extrabold text-teal-400 mb-8">2.000 VNĐ</div>
             
-            <img id="qr-code" class="qr-image" src="" alt="Mã QR">
-            
-            <p style="font-size: 13px; color: #555;">Mở app ngân hàng quét mã. Cửa sổ sẽ tự tải file sau khi chuyển thành công.</p>
-            
-            <div id="modal-msg"></div>
+            <button onclick="muaHang()" id="btn-mua" 
+                    class="px-10 py-4 bg-teal-500 hover:bg-teal-400 text-gray-900 font-bold text-xl rounded-full shadow-[0_0_15px_rgba(20,184,166,0.5)] transition-all transform hover:scale-105">
+                MUA NGAY / TẢI XUỐNG
+            </button>
+
+            <div id="khu-vuc-thanh-toan" class="hidden mt-8 p-6 bg-gray-900 rounded-xl border border-dashed border-teal-500">
+                <h4 class="text-lg text-gray-300">Vui lòng chuyển khoản đúng <b class="text-teal-400">2.000đ</b> với nội dung:</h4>
+                <div id="ma-don-hang" class="text-5xl font-bold text-yellow-400 my-4 tracking-widest">ĐANG TẠO...</div>
+                <div class="flex items-center justify-center space-x-2 text-gray-400 mt-4">
+                    <svg class="animate-spin h-5 w-5 text-teal-500" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path></svg>
+                    <span>Đang chờ nhận tiền... Vui lòng không đóng trang này!</span>
+                </div>
+            </div>
         </div>
     </div>
 
     <script>
-        let currentOrderId = "";
-        let autoCheckInterval; // Biến lưu vòng lặp kiểm tra
+        async function muaHang() {
+            document.getElementById('btn-mua').style.display = 'none';
+            document.getElementById('khu-vuc-thanh-toan').style.display = 'block';
 
-        async function openPayment(productId, price, productName) {
-            // 1. Tạo một mã đơn hàng ngẫu nhiên (Ví dụ: DH8492)
-            currentOrderId = "DH" + Math.floor(1000 + Math.random() * 9000);
+            // Gọi server tạo đơn hàng mới
+            const res = await fetch('/create-order', { method: 'POST' });
+            const data = await res.json();
+            const order_id = data.order_id;
             
-            // 2. Báo cho Backend biết khách vừa tạo đơn
-            await fetch('/create-order', {
-                method: 'POST',
-                headers: {'Content-Type': 'application/json'},
-                body: JSON.stringify({ order_id: currentOrderId, product_id: productId })
-            });
+            // In mã đơn hàng lên màn hình
+            document.getElementById('ma-don-hang').innerText = order_id;
 
-            // 3. Cập nhật thông tin lên cửa sổ Popup
-            document.getElementById('modal-title').innerText = productName;
-            document.getElementById('display-order-id').innerText = currentOrderId;
-            
-            // Hiệu ứng đang chờ thanh toán
-            const msgDiv = document.getElementById('modal-msg');
-            msgDiv.innerText = "⏳ Hệ thống đang tự động check...";
-            msgDiv.style.color = "#f39c12"; 
-            
-            // 4. CHÚ Ý: NHỚ THAY 'MB-0123456789' BẰNG STK CỦA BẠN NHÉ
-            // Cú pháp chuẩn: TÊN_VIẾT_TẮT_BANK-SỐ_TÀI_KHOẢN (Ví dụ: VCB-0123456789)
-            const bankAccount = "MB-63498066778899"; 
-            const qrUrl = `https://img.vietqr.io/image/${bankAccount}-compact2.png?amount=${price}&addInfo=${currentOrderId}`;
-            document.getElementById('qr-code').src = qrUrl;
-
-            // Hiển thị Popup
-            document.getElementById('paymentModal').style.display = 'flex';
-
-            // BẮT ĐẦU TỰ ĐỘNG KIỂM TRA MỖI 3 GIÂY (3000ms)
-            if(autoCheckInterval) clearInterval(autoCheckInterval);
-            autoCheckInterval = setInterval(autoCheckPayment, 3000);
-        }
-
-        function closeModal() {
-            document.getElementById('paymentModal').style.display = 'none';
-            // Hủy vòng lặp kiểm tra nếu khách chủ động đóng cửa sổ
-            if(autoCheckInterval) clearInterval(autoCheckInterval); 
-        }
-
-        // Hàm điệp viên: tự động hỏi Server liên tục
-        async function autoCheckPayment() {
-            try {
-                const response = await fetch(`/api/check-status/${currentOrderId}`);
-                const data = await response.json();
-
-                // Nếu Server báo đã trả tiền -> Tự động nhả file
-                if (data.status === "paid") {
-                    clearInterval(autoCheckInterval); // Dừng vòng lặp kiểm tra lập tức
-                    
-                    const msgDiv = document.getElementById('modal-msg');
-                    msgDiv.innerText = "✅ Đã nhận tiền! Đang tự động tải file...";
-                    msgDiv.style.color = "#28a745";
-                    
-                    // Gọi hàm lấy file
-                    executeDownload();
+            // Kiểm tra trạng thái liên tục mỗi 3 giây
+            let kiemTra = setInterval(async () => {
+                const checkRes = await fetch('/api/check-status/' + order_id);
+                const statusData = await checkRes.json();
+                
+                if (statusData.status === 'success') {
+                    clearInterval(kiemTra); // Dừng kiểm tra
+                    alert("✅ Thanh toán thành công! File của bạn đang được tải xuống.");
+                    window.location.href = statusData.file_url; // Tự động tải file
                 }
-            } catch (error) {
-                console.log("Đang thử lại kết nối...");
-            }
-        }
-
-        // Hàm thực thi tải file ẩn
-        async function executeDownload() {
-            try {
-                const response = await fetch(`/download/${currentOrderId}`);
-                if (response.ok) {
-                    const blob = await response.blob();
-                    const url = window.URL.createObjectURL(blob);
-                    const a = document.createElement('a');
-                    a.href = url;
-                    
-                    // Lấy tên file từ Header do Backend trả về
-                    const disposition = response.headers.get('Content-Disposition');
-                    const filename = disposition ? disposition.split('filename=')[1].replace(/"/g, '') : "downloaded_file";
-                    a.download = filename;
-                    
-                    document.body.appendChild(a);
-                    a.click();
-                    
-                    // Đóng popup sau 3 giây để màn hình sạch sẽ
-                    setTimeout(closeModal, 3000);
-                }
-            } catch (error) {
-                document.getElementById('modal-msg').innerText = "Lỗi khi tải file.";
-            }
+            }, 3000);
         }
     </script>
+    {% endif %}
+
 </body>
 </html>
