@@ -3,93 +3,157 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Shop Bán Tool Tự Động</title>
+    <title>Siêu Thị Tool VIP</title>
     <script src="https://cdn.tailwindcss.com"></script>
 </head>
-<body class="bg-gray-900 text-white font-sans min-h-screen flex flex-col items-center justify-center p-4">
+<body class="bg-gray-900 text-white font-sans min-h-screen">
 
     {% if not username %}
-    <div class="bg-gray-800 p-8 rounded-2xl shadow-2xl w-full max-w-md border border-gray-700">
-        <h1 class="text-3xl font-bold text-center text-teal-400 mb-6">ĐĂNG NHẬP HỆ THỐNG</h1>
-        
-        <form action="/login" method="POST" class="space-y-4">
-            <input type="text" name="username" placeholder="Tên đăng nhập" required 
-                   class="w-full px-4 py-3 bg-gray-700 rounded-lg focus:outline-none focus:ring-2 focus:ring-teal-400">
-            <input type="password" name="password" placeholder="Mật khẩu" required 
-                   class="w-full px-4 py-3 bg-gray-700 rounded-lg focus:outline-none focus:ring-2 focus:ring-teal-400">
-            <button type="submit" class="w-full py-3 bg-teal-500 hover:bg-teal-400 text-gray-900 font-bold rounded-lg transition duration-300">
-                ĐĂNG NHẬP
-            </button>
-        </form>
+    <div class="flex items-center justify-center min-h-screen p-4">
+        <div class="bg-gray-800 p-8 rounded-2xl shadow-2xl w-full max-w-md border border-gray-700">
+            
+            <div class="flex border-b border-gray-700 mb-6">
+                <button onclick="showTab('login')" id="btn-login" class="w-1/2 py-3 text-teal-400 font-bold border-b-2 border-teal-400">ĐĂNG NHẬP</button>
+                <button onclick="showTab('register')" id="btn-register" class="w-1/2 py-3 text-gray-500 font-bold hover:text-gray-300">ĐĂNG KÝ</button>
+            </div>
 
-        <div class="mt-6 border-t border-gray-700 pt-6">
-            <h2 class="text-center text-gray-400 mb-4">Hoặc tạo tài khoản mới</h2>
-            <form action="/register" method="POST" class="space-y-4">
-                <input type="text" name="username" placeholder="Tên đăng nhập mới" required 
-                       class="w-full px-4 py-2 bg-gray-700 rounded-lg text-sm">
-                <input type="password" name="password" placeholder="Mật khẩu mới" required 
-                       class="w-full px-4 py-2 bg-gray-700 rounded-lg text-sm">
-                <button type="submit" class="w-full py-2 bg-gray-600 hover:bg-gray-500 font-bold rounded-lg transition duration-300">
-                    ĐĂNG KÝ
-                </button>
+            <form id="tab-login" action="/login" method="POST" class="space-y-4 block">
+                <h2 class="text-2xl font-bold mb-4 text-center">Chào mừng trở lại!</h2>
+                <input type="text" name="username" placeholder="Tên đăng nhập" required class="w-full px-4 py-3 bg-gray-700 rounded-lg focus:outline-none focus:ring-2 focus:ring-teal-400">
+                <input type="password" name="password" placeholder="Mật khẩu" required class="w-full px-4 py-3 bg-gray-700 rounded-lg focus:outline-none focus:ring-2 focus:ring-teal-400">
+                <button type="submit" class="w-full py-3 bg-teal-500 hover:bg-teal-400 text-gray-900 font-bold rounded-lg transition duration-300">ĐĂNG NHẬP</button>
+            </form>
+
+            <form id="tab-register" action="/register" method="POST" class="space-y-4 hidden">
+                <h2 class="text-2xl font-bold mb-4 text-center">Tạo tài khoản mới</h2>
+                <p class="text-sm text-yellow-400 mb-2">*Tên đăng nhập viết liền, không dấu.</p>
+                <input type="text" name="username" placeholder="Tên đăng nhập mới" required class="w-full px-4 py-3 bg-gray-700 rounded-lg focus:outline-none focus:ring-2 focus:ring-teal-400">
+                <input type="password" name="password" placeholder="Mật khẩu mới" required class="w-full px-4 py-3 bg-gray-700 rounded-lg focus:outline-none focus:ring-2 focus:ring-teal-400">
+                <button type="submit" class="w-full py-3 bg-gray-300 hover:bg-white text-gray-900 font-bold rounded-lg transition duration-300">ĐĂNG KÝ NGAY</button>
             </form>
         </div>
     </div>
+
+    <script>
+        // Code xử lý chuyển Tab mượt mà
+        function showTab(tabName) {
+            document.getElementById('tab-login').classList.add('hidden');
+            document.getElementById('tab-register').classList.add('hidden');
+            document.getElementById('btn-login').classList.replace('text-teal-400', 'text-gray-500');
+            document.getElementById('btn-login').classList.remove('border-b-2', 'border-teal-400');
+            document.getElementById('btn-register').classList.replace('text-teal-400', 'text-gray-500');
+            document.getElementById('btn-register').classList.remove('border-b-2', 'border-teal-400');
+
+            document.getElementById('tab-' + tabName).classList.remove('hidden');
+            document.getElementById('btn-' + tabName).classList.replace('text-gray-500', 'text-teal-400');
+            document.getElementById('btn-' + tabName).classList.add('border-b-2', 'border-teal-400');
+        }
+    </script>
     {% endif %}
 
+
     {% if username %}
-    <div class="w-full max-w-4xl">
-        <div class="flex justify-between items-center bg-gray-800 p-4 rounded-xl shadow-lg mb-8 border border-gray-700">
-            <h2 class="text-xl font-bold text-teal-400">Xin chào, {{ username }}! 🖐</h2>
-            <a href="/logout" class="px-4 py-2 bg-red-500 hover:bg-red-600 text-white font-bold rounded-lg transition">Đăng Xuất</a>
+    <div class="max-w-6xl mx-auto p-4 pt-8">
+        
+        <div class="flex flex-col md:flex-row justify-between items-center bg-gray-800 p-6 rounded-2xl shadow-lg mb-8 border border-gray-700">
+            <div class="flex items-center space-x-4 mb-4 md:mb-0">
+                <div class="w-12 h-12 bg-teal-500 rounded-full flex items-center justify-center text-xl font-bold text-gray-900">
+                    {{ username[0]|upper }}
+                </div>
+                <div>
+                    <h2 class="text-xl font-bold text-gray-100">{{ username }}</h2>
+                    <p class="text-teal-400 font-bold">Số dư: <span id="user-balance" class="text-2xl">{{ "{:,.0f}".format(user_data.balance) }}</span> VNĐ</p>
+                </div>
+            </div>
+            
+            <div class="flex space-x-3">
+                <button onclick="switchMenu('shop')" class="px-5 py-2 bg-gray-700 hover:bg-gray-600 rounded-lg font-bold">🛒 Cửa hàng</button>
+                <button onclick="switchMenu('wallet')" class="px-5 py-2 bg-teal-600 hover:bg-teal-500 rounded-lg font-bold text-white shadow-[0_0_10px_rgba(20,184,166,0.5)]">💳 Nạp tiền</button>
+                <a href="/logout" class="px-5 py-2 bg-red-500 hover:bg-red-600 text-white font-bold rounded-lg transition">Đăng Xuất</a>
+            </div>
         </div>
 
-        <div class="bg-gray-800 rounded-2xl overflow-hidden shadow-2xl border border-gray-700 text-center p-8">
-            <div class="text-6xl mb-4">🚀</div>
-            <h3 class="text-3xl font-bold mb-2">Tool System Mod Premium</h3>
-            <p class="text-gray-400 mb-6">Tự động hóa tác vụ, siêu nhẹ, không cần cài đặt.</p>
-            <div class="text-4xl font-extrabold text-teal-400 mb-8">2.000 VNĐ</div>
+        <div id="menu-shop" class="block">
+            <h3 class="text-2xl font-bold mb-6 border-b border-gray-700 pb-2">🔥 Sản phẩm nổi bật</h3>
             
-            <button onclick="muaHang()" id="btn-mua" 
-                    class="px-10 py-4 bg-teal-500 hover:bg-teal-400 text-gray-900 font-bold text-xl rounded-full shadow-[0_0_15px_rgba(20,184,166,0.5)] transition-all transform hover:scale-105">
-                MUA NGAY / TẢI XUỐNG
-            </button>
-
-            <div id="khu-vuc-thanh-toan" class="hidden mt-8 p-6 bg-gray-900 rounded-xl border border-dashed border-teal-500">
-                <h4 class="text-lg text-gray-300">Vui lòng chuyển khoản đúng <b class="text-teal-400">2.000đ</b> với nội dung:</h4>
-                <div id="ma-don-hang" class="text-5xl font-bold text-yellow-400 my-4 tracking-widest">ĐANG TẠO...</div>
-                <div class="flex items-center justify-center space-x-2 text-gray-400 mt-4">
-                    <svg class="animate-spin h-5 w-5 text-teal-500" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path></svg>
-                    <span>Đang chờ nhận tiền... Vui lòng không đóng trang này!</span>
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+                {% for pid, pinfo in products.items() %}
+                <div class="bg-gray-800 rounded-xl p-6 border border-gray-700 hover:border-teal-400 transition-all shadow-lg text-center flex flex-col justify-between">
+                    <div>
+                        <div class="text-5xl mb-4">🚀</div>
+                        <h4 class="text-xl font-bold text-white mb-2">{{ pinfo.name }}</h4>
+                        <p class="text-gray-400 text-sm mb-4">{{ pinfo.desc }}</p>
+                    </div>
+                    <div>
+                        <div class="text-3xl font-extrabold text-teal-400 mb-4">{{ "{:,.0f}".format(pinfo.price) }}đ</div>
+                        
+                        {% if pid in user_data.purchased %}
+                            <a href="/download/{{ pid }}" class="block w-full py-3 bg-gray-600 text-white font-bold rounded-lg">⬇️ Tải lại file</a>
+                        {% else %}
+                            <button onclick="muaHang('{{ pid }}')" class="w-full py-3 bg-teal-500 hover:bg-teal-400 text-gray-900 font-bold rounded-lg shadow-lg">💳 Mua bằng số dư</button>
+                        {% endif %}
+                    </div>
                 </div>
+                {% endfor %}
+            </div>
+        </div>
+
+        <div id="menu-wallet" class="hidden max-w-2xl mx-auto">
+            <div class="bg-gray-800 rounded-2xl p-8 border border-teal-500 text-center shadow-[0_0_30px_rgba(20,184,166,0.2)]">
+                <h3 class="text-3xl font-bold text-teal-400 mb-2">NẠP TỰ ĐỘNG 24/7</h3>
+                <p class="text-gray-400 mb-6">Quét mã QR dưới đây bằng App Ngân Hàng. Tiền sẽ tự cộng vào tài khoản trong 5-10 giây.</p>
+                
+                <div class="bg-white p-4 rounded-xl inline-block mb-6">
+                    <img src="https://img.vietqr.io/image/{{bank_id}}-{{stk}}-compact2.png?amount=0&addInfo=NAP {{username}}&accountName={{chutk}}" alt="QR Nạp Tiền" class="w-64 h-64 object-contain">
+                </div>
+
+                <div class="bg-gray-900 p-4 rounded-lg border border-gray-700 text-left space-y-2">
+                    <p>🏦 Ngân hàng: <b class="text-white">{{ bank_id }}</b></p>
+                    <p>💳 Số tài khoản: <b class="text-xl text-teal-400 tracking-wider">{{ stk }}</b></p>
+                    <p>👤 Chủ thẻ: <b class="text-white">{{ chutk }}</b></p>
+                    <p>📝 Nội dung chuyển khoản (Bắt buộc): <b class="text-2xl text-yellow-400">NAP {{ username }}</b></p>
+                </div>
+                <p class="text-sm text-gray-500 mt-4">*Hệ thống tự động cập nhật số dư sau khi ngân hàng báo thành công.</p>
             </div>
         </div>
     </div>
 
     <script>
-        async function muaHang() {
-            document.getElementById('btn-mua').style.display = 'none';
-            document.getElementById('khu-vuc-thanh-toan').style.display = 'block';
+        // Chuyển qua lại giữa Cửa hàng và Nạp tiền
+        function switchMenu(menuName) {
+            document.getElementById('menu-shop').style.display = 'none';
+            document.getElementById('menu-wallet').style.display = 'none';
+            document.getElementById('menu-' + menuName).style.display = 'block';
+        }
 
-            // Gọi server tạo đơn hàng mới
-            const res = await fetch('/create-order', { method: 'POST' });
+        // Tự động kiểm tra số dư mỗi 5 giây
+        setInterval(async () => {
+            const res = await fetch('/api/me');
             const data = await res.json();
-            const order_id = data.order_id;
-            
-            // In mã đơn hàng lên màn hình
-            document.getElementById('ma-don-hang').innerText = order_id;
+            // Cập nhật số dư trên web
+            document.getElementById('user-balance').innerText = data.balance.toLocaleString('vi-VN');
+        }, 5000);
 
-            // Kiểm tra trạng thái liên tục mỗi 3 giây
-            let kiemTra = setInterval(async () => {
-                const checkRes = await fetch('/api/check-status/' + order_id);
-                const statusData = await checkRes.json();
+        // Xử lý nút Bấm mua hàng
+        async function muaHang(productId) {
+            if(confirm("Bạn có chắc chắn muốn mua sản phẩm này?")) {
+                const res = await fetch('/api/buy/' + productId, { method: 'POST' });
+                const data = await res.json();
                 
-                if (statusData.status === 'success') {
-                    clearInterval(kiemTra); // Dừng kiểm tra
-                    alert("✅ Thanh toán thành công! File của bạn đang được tải xuống.");
-                    window.location.href = statusData.file_url; // Tự động tải file
+                if (data.status === 'success') {
+                    alert(data.message);
+                    // Mua xong thì tải file luôn
+                    window.location.href = '/download/' + productId;
+                    // Tải lại trang sau 2 giây để update nút thành "Tải lại file"
+                    setTimeout(() => window.location.reload(), 2000);
+                } else {
+                    // Nếu lỗi (ví dụ thiếu tiền)
+                    alert("❌ " + data.message);
+                    if(data.message.includes("Số dư")) {
+                        switchMenu('wallet'); // Chuyển sang trang nạp tiền
+                    }
                 }
-            }, 3000);
+            }
         }
     </script>
     {% endif %}
