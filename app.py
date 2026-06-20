@@ -1,80 +1,88 @@
-from fastapi import FastAPI, Request, Form, Response
-from fastapi.responses import HTMLResponse, RedirectResponse, FileResponse
+from fastapi import FastAPI, Request, HTTPException
+from fastapi.responses import FileResponse
 from fastapi.templating import Jinja2Templates
-import random
+from pydantic import BaseModel
 import os
+import random
 
 app = FastAPI()
 templates = Jinja2Templates(directory="templates")
 
-# Cơ sở dữ liệu tạm thời (Lưu trên RAM)
-USERS = {}  # Lưu tài khoản, vd: {"admin": "123456"}
-ORDERS = {} # Lưu đơn hàng
+FILE_DIRECTORY = "protected_files"
+
+# Kho hàng của bạn (Có thể thêm bớt tùy ý)
+PRODUCTS = {
+    "sp1": {"name": "CC NAM", "price": 2000, "file": "app_setup.dlack"},
+    "sp2": {"name": "Tool VIP (Bypass Login)", "price": 100000, "file": "tool_vip.zip"},
+    "sp3": {"name": "Script Giao Diện Mới", "price": 30000, "file": "script_ui.rar"}
+}
+
+# Nơi lưu trữ các đơn hàng đang chờ thanh toán
+ORDERS = {}
+
+# Khai báo cấu trúc dữ liệu nhận từ trình duyệt
+class OrderRequest(BaseModel):
+    order_id: str
+    product_id: str
 
 @app.get("/")
-def home(request: Request):
-    # Kiểm tra xem user có đang đăng nhập không (qua cookie)
-    username = request.cookies.get("session_user")
-    return templates.TemplateResponse("index.html", {"request": request, "username": username})
+async def home(request: Request):
+    # Gửi kho hàng ra ngoài giao diện
+    return templates.TemplateResponse(request=request, name="index.html", context={"products": PRODUCTS})
 
-@app.post("/register")
-def register(username: str = Form(...), password: str = Form(...)):
-    if username in USERS:
-        return HTMLResponse("<h2 style='color:white;text-align:center;margin-top:50px;'>Tài khoản đã tồn tại! <a href='/' style='color:#00ffcc;'>Quay lại</a></h2>")
-    
-    USERS[username] = password
-    # Đăng ký xong cho đăng nhập luôn
-    response = RedirectResponse(url="/", status_code=303)
-    response.set_cookie(key="session_user", value=username)
-    return response
-
-@app.post("/login")
-def login(username: str = Form(...), password: str = Form(...)):
-    if USERS.get(username) == password:
-        response = RedirectResponse(url="/", status_code=303)
-        response.set_cookie(key="session_user", value=username)
-        return response
-    return HTMLResponse("<h2 style='color:white;text-align:center;margin-top:50px;'>Sai tài khoản hoặc mật khẩu! <a href='/' style='color:#00ffcc;'>Quay lại</a></h2>")
-
-@app.get("/logout")
-def logout():
-    response = RedirectResponse(url="/", status_code=303)
-    response.delete_cookie("session_user")
-    return response
-
+# Khách bấm mua -> Hệ thống ghi nhận đơn hàng tạm thời
 @app.post("/create-order")
-def create_order(request: Request):
-    order_id = f"DH{random.randint(1000, 9999)}"
-    # Giả sử file bạn bán tên là app_setup.dlack, giá 2000đ
-    ORDERS[order_id] = {"status": "pending", "amount": 2000, "file": "app_setup.dlack"}
-    return {"order_id": order_id}
+async def create_order(order: OrderRequest):
+    if order.product_id not in PRODUCTS:
+        raise HTTPException(status_code=404, detail="Sản phẩm không tồn tại")
+    
+    product = PRODUCTS[order.product_id]
+    ORDERS[order.order_id] = {
+        "status": "pending",
+        "file_name": product["file"],
+        "amount": product["price"]
+    }
+    return {"success": True}
 
-@app.get("/api/check-status/{order_id}")
-def check_status(order_id: str):
-    order = ORDERS.get(order_id)
-    if order and order["status"] == "success":
-        return {"status": "success", "file_url": f"/download/{order_id}"}
-    return {"status": "pending"}
-
-@app.get("/download/{order_id}")
-def download_file(order_id: str):
-    order = ORDERS.get(order_id)
-    if order and order["status"] == "success":
-        file_path = f"protected_files/{order['file']}"
-        if os.path.exists(file_path):
-            return FileResponse(file_path, filename=order['file'])
-    return HTMLResponse("File không tồn tại hoặc bạn chưa thanh toán!")
-
+# Lắng nghe tiền về từ SePay (Tự động quét mã đơn)
 @app.post("/sepay-webhook")
 async def sepay_webhook(request: Request):
-    data = await request.json()
-    transfer_content = data.get("content", "").upper()
-    transfer_amount = int(data.get("transferAmount", 0))
+    try:
+        data = await request.json()
+        transfer_content = data.get("content", "").upper()
+        transfer_amount = int(data.get("transferAmount", 0))
+        
+        print(f"💰 TING TING: Nhận {transfer_amount}đ - Nội dung: {transfer_content}")
 
-    for order_id, order_info in ORDERS.items():
-        if order_id in transfer_content and transfer_amount >= order_info["amount"]:
-            order_info["status"] = "success"
-            print(f"✅ Đơn {order_id} đã thanh toán thành công!")
-            return {"message": "Thành công"}
+        for order_id, order_info in ORDERS.items():
+            if order_id in transfer_content and transfer_amount >= order_info["amount"]:
+                order_info["status"] = "paid"
+                print(f"✅ Đơn {order_id} đã thanh toán thành công!")
+                return {"success": True}
+                
+        return {"success": False, "message": "Không khớp đơn hàng"}
+    except Exception as e:
+        return {"success": False, "error": str(e)}
+
+# API MỚI: Trình duyệt sẽ gọi ngầm liên tục vào đây để check xem trạng thái đã 'paid' chưa
+@app.get("/api/check-status/{order_id}")
+async def check_status(order_id: str):
+    if order_id in ORDERS:
+        return {"status": ORDERS[order_id]["status"]}
+    return {"status": "not_found"}
+
+# Tải file (Chỉ khi trạng thái là 'paid')
+@app.get("/download/{order_id}")
+async def download_file(order_id: str):
+    if order_id not in ORDERS:
+        raise HTTPException(status_code=404, detail="Không tìm thấy đơn hàng.")
     
-    return {"message": "Không tìm thấy đơn hàng"}
+    if ORDERS[order_id]["status"] != "paid":
+        raise HTTPException(status_code=403, detail="Đơn hàng chưa được thanh toán!")
+        
+    file_path = os.path.join(FILE_DIRECTORY, ORDERS[order_id]["file_name"])
+    
+    if not os.path.exists(file_path):
+        raise HTTPException(status_code=404, detail="File hệ thống đang bảo trì.")
+        
+    return FileResponse(path=file_path, filename=ORDERS[order_id]["file_name"])
