@@ -1,13 +1,12 @@
 from fastapi import FastAPI, Request, Form, Response
 from fastapi.responses import HTMLResponse, RedirectResponse, FileResponse
 from fastapi.templating import Jinja2Templates
+import json
 import os
+import random
 
 app = FastAPI()
 templates = Jinja2Templates(directory="templates")
-
-# CƠ SỞ DỮ LIỆU TẠM THỜI
-USERS = {}  
 
 # =========================================================
 # ⚙️ CẤU HÌNH NGÂN HÀNG CỦA BẠN (ĐỂ TẠO MÃ QR TỰ ĐỘNG)
@@ -22,13 +21,26 @@ PRODUCTS = {
     "tool_3": {"name": "Phần mềm Auto Click", "price": 10000, "desc": "Click siêu tốc không chiếm chuột", "file": "auto_click.zip"}
 }
 
+# HÀM ĐỌC/GHI ĐỂ KHÔNG BỊ MẤT DỮ LIỆU KHI RESET SERVER
+def load_users():
+    if os.path.exists("users.json"):
+        with open("users.json", "r", encoding="utf-8") as f:
+            try:
+                return json.load(f)
+            except:
+                return {}
+    return {}
+
+def save_users(users):
+    with open("users.json", "w", encoding="utf-8") as f:
+        json.dump(users, f, ensure_ascii=False, indent=4)
+
 @app.get("/")
 def home(request: Request):
     username = request.cookies.get("session_user")
+    USERS = load_users()
     
-    # 🔥 ĐÂY CHÍNH LÀ ĐOẠN CODE "CỨU MẠNG" SỬA LỖI 500
     if username and username not in USERS:
-        # Nếu thẻ nhớ ảo còn mà máy chủ đã reset, ép đăng xuất luôn!
         response = templates.TemplateResponse(request=request, name="index.html", context={"request": request, "username": None})
         response.delete_cookie("session_user")
         return response
@@ -52,10 +64,14 @@ def home(request: Request):
 @app.post("/register")
 def register(username: str = Form(...), password: str = Form(...)):
     username = username.strip().lower()
+    USERS = load_users()
+    
     if username in USERS:
         return HTMLResponse("<h2 style='color:white;text-align:center;margin-top:50px;'>Tài khoản đã tồn tại! <a href='/' style='color:#00ffcc;'>Quay lại</a></h2>")
     
     USERS[username] = {"password": password, "balance": 0, "purchased": []}
+    save_users(USERS) # Lưu lại vào file file ngay lập tức
+    
     response = RedirectResponse(url="/", status_code=303)
     response.set_cookie(key="session_user", value=username)
     return response
@@ -63,6 +79,7 @@ def register(username: str = Form(...), password: str = Form(...)):
 @app.post("/login")
 def login(username: str = Form(...), password: str = Form(...)):
     username = username.strip().lower()
+    USERS = load_users()
     user = USERS.get(username)
     if user and user["password"] == password:
         response = RedirectResponse(url="/", status_code=303)
@@ -79,6 +96,8 @@ def logout():
 @app.post("/api/buy/{product_id}")
 def buy_product(product_id: str, request: Request):
     username = request.cookies.get("session_user")
+    USERS = load_users()
+    
     if not username or username not in USERS:
         return {"status": "error", "message": "Vui lòng đăng nhập lại!"}
     
@@ -96,11 +115,14 @@ def buy_product(product_id: str, request: Request):
     
     user["balance"] -= product["price"]
     user["purchased"].append(product_id)
+    save_users(USERS) # Lưu lại số dư mới sau khi mua
     return {"status": "success", "message": "Mua thành công! Hệ thống đang tải file."}
 
 @app.get("/download/{product_id}")
 def download_file(product_id: str, request: Request):
     username = request.cookies.get("session_user")
+    USERS = load_users()
+    
     if not username or username not in USERS:
         return HTMLResponse("Vui lòng đăng nhập!")
         
@@ -117,6 +139,7 @@ def download_file(product_id: str, request: Request):
 @app.get("/api/me")
 def get_me(request: Request):
     username = request.cookies.get("session_user")
+    USERS = load_users()
     if username and username in USERS:
         return {"balance": USERS[username]["balance"]}
     return {"balance": 0}
@@ -126,6 +149,9 @@ async def sepay_webhook(request: Request):
     data = await request.json()
     transfer_content = data.get("content", "").upper()
     transfer_amount = int(data.get("transferAmount", 0))
+    
+    USERS = load_users()
+    updated = False
 
     for username, user_info in USERS.items():
         syntax_1 = f"NAP {username}".upper()
@@ -134,6 +160,11 @@ async def sepay_webhook(request: Request):
         if syntax_1 in transfer_content or syntax_2 in transfer_content:
             user_info["balance"] += transfer_amount
             print(f"✅ Cộng thành công {transfer_amount}đ cho {username}")
-            return {"message": "Nạp tiền thành công"}
+            updated = True
+            break
             
+    if updated:
+        save_users(USERS) # Lưu lại ví tiền mới vào file cứng
+        return {"message": "Nạp tiền thành công"}
+        
     return {"message": "Không tìm thấy người dùng hợp lệ"}
