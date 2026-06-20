@@ -1,88 +1,79 @@
-from fastapi import FastAPI, Request, HTTPException
-from fastapi.responses import FileResponse
+from fastapi import FastAPI, Request, Form, Response
+from fastapi.responses import HTMLResponse, RedirectResponse, FileResponse
 from fastapi.templating import Jinja2Templates
-from pydantic import BaseModel
-import os
 import random
+import os
 
 app = FastAPI()
 templates = Jinja2Templates(directory="templates")
 
-FILE_DIRECTORY = "protected_files"
-
-# Kho hàng của bạn (Có thể thêm bớt tùy ý)
-PRODUCTS = {
-    "sp1": {"name": "CC NAM", "price": 2000, "file": "app_setup.dlack"},
-    "sp2": {"name": "Tool VIP (Bypass Login)", "price": 100000, "file": "tool_vip.zip"},
-    "sp3": {"name": "Script Giao Diện Mới", "price": 30000, "file": "script_ui.rar"}
-}
-
-# Nơi lưu trữ các đơn hàng đang chờ thanh toán
-ORDERS = {}
-
-# Khai báo cấu trúc dữ liệu nhận từ trình duyệt
-class OrderRequest(BaseModel):
-    order_id: str
-    product_id: str
+# Cơ sở dữ liệu tạm thời lưu tài khoản và đơn hàng
+USERS = {}  
+ORDERS = {} 
 
 @app.get("/")
-async def home(request: Request):
-    # Gửi kho hàng ra ngoài giao diện
-    return templates.TemplateResponse(request=request, name="index.html", context={"products": PRODUCTS})
+def home(request: Request):
+    # Kiểm tra xem khách đã đăng nhập chưa
+    username = request.cookies.get("session_user")
+    return templates.TemplateResponse("index.html", {"request": request, "username": username})
 
-# Khách bấm mua -> Hệ thống ghi nhận đơn hàng tạm thời
-@app.post("/create-order")
-async def create_order(order: OrderRequest):
-    if order.product_id not in PRODUCTS:
-        raise HTTPException(status_code=404, detail="Sản phẩm không tồn tại")
+@app.post("/register")
+def register(username: str = Form(...), password: str = Form(...)):
+    if username in USERS:
+        return HTMLResponse("<h2 style='color:white;text-align:center;margin-top:50px;'>Tài khoản đã tồn tại! <a href='/' style='color:#00ffcc;'>Quay lại</a></h2>")
     
-    product = PRODUCTS[order.product_id]
-    ORDERS[order.order_id] = {
-        "status": "pending",
-        "file_name": product["file"],
-        "amount": product["price"]
-    }
-    return {"success": True}
+    USERS[username] = password
+    # Đăng ký thành công -> Tự động đăng nhập luôn
+    response = RedirectResponse(url="/", status_code=303)
+    response.set_cookie(key="session_user", value=username)
+    return response
 
-# Lắng nghe tiền về từ SePay (Tự động quét mã đơn)
+@app.post("/login")
+def login(username: str = Form(...), password: str = Form(...)):
+    if USERS.get(username) == password:
+        response = RedirectResponse(url="/", status_code=303)
+        response.set_cookie(key="session_user", value=username)
+        return response
+    return HTMLResponse("<h2 style='color:white;text-align:center;margin-top:50px;'>Sai tài khoản hoặc mật khẩu! <a href='/' style='color:#00ffcc;'>Quay lại</a></h2>")
+
+@app.get("/logout")
+def logout():
+    response = RedirectResponse(url="/", status_code=303)
+    response.delete_cookie("session_user")
+    return response
+
+@app.post("/create-order")
+def create_order(request: Request):
+    order_id = f"DH{random.randint(1000, 9999)}"
+    # GIÁ BÁN VÀ TÊN FILE BẠN CHỈNH Ở ĐÂY
+    ORDERS[order_id] = {"status": "pending", "amount": 2000, "file": "app_setup.dlack"}
+    return {"order_id": order_id}
+
+@app.get("/api/check-status/{order_id}")
+def check_status(order_id: str):
+    order = ORDERS.get(order_id)
+    if order and order["status"] == "success":
+        return {"status": "success", "file_url": f"/download/{order_id}"}
+    return {"status": "pending"}
+
+@app.get("/download/{order_id}")
+def download_file(order_id: str):
+    order = ORDERS.get(order_id)
+    if order and order["status"] == "success":
+        file_path = f"protected_files/{order['file']}"
+        if os.path.exists(file_path):
+            return FileResponse(file_path, filename=order['file'])
+    return HTMLResponse("<h2 style='color:white;text-align:center;'>File không tồn tại! Hãy kiểm tra lại thư mục protected_files.</h2>")
+
 @app.post("/sepay-webhook")
 async def sepay_webhook(request: Request):
-    try:
-        data = await request.json()
-        transfer_content = data.get("content", "").upper()
-        transfer_amount = int(data.get("transferAmount", 0))
-        
-        print(f"💰 TING TING: Nhận {transfer_amount}đ - Nội dung: {transfer_content}")
+    data = await request.json()
+    transfer_content = data.get("content", "").upper()
+    transfer_amount = int(data.get("transferAmount", 0))
 
-        for order_id, order_info in ORDERS.items():
-            if order_id in transfer_content and transfer_amount >= order_info["amount"]:
-                order_info["status"] = "paid"
-                print(f"✅ Đơn {order_id} đã thanh toán thành công!")
-                return {"success": True}
-                
-        return {"success": False, "message": "Không khớp đơn hàng"}
-    except Exception as e:
-        return {"success": False, "error": str(e)}
-
-# API MỚI: Trình duyệt sẽ gọi ngầm liên tục vào đây để check xem trạng thái đã 'paid' chưa
-@app.get("/api/check-status/{order_id}")
-async def check_status(order_id: str):
-    if order_id in ORDERS:
-        return {"status": ORDERS[order_id]["status"]}
-    return {"status": "not_found"}
-
-# Tải file (Chỉ khi trạng thái là 'paid')
-@app.get("/download/{order_id}")
-async def download_file(order_id: str):
-    if order_id not in ORDERS:
-        raise HTTPException(status_code=404, detail="Không tìm thấy đơn hàng.")
+    for order_id, order_info in ORDERS.items():
+        if order_id in transfer_content and transfer_amount >= order_info["amount"]:
+            order_info["status"] = "success"
+            return {"message": "Thành công"}
     
-    if ORDERS[order_id]["status"] != "paid":
-        raise HTTPException(status_code=403, detail="Đơn hàng chưa được thanh toán!")
-        
-    file_path = os.path.join(FILE_DIRECTORY, ORDERS[order_id]["file_name"])
-    
-    if not os.path.exists(file_path):
-        raise HTTPException(status_code=404, detail="File hệ thống đang bảo trì.")
-        
-    return FileResponse(path=file_path, filename=ORDERS[order_id]["file_name"])
+    return {"message": "Không tìm thấy đơn hàng"}
