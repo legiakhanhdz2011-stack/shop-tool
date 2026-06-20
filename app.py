@@ -7,15 +7,15 @@ import os
 app = FastAPI()
 templates = Jinja2Templates(directory="templates")
 
-# Cơ sở dữ liệu tạm thời lưu tài khoản và đơn hàng
+# Cơ sở dữ liệu tạm thời
 USERS = {}  
 ORDERS = {} 
 
 @app.get("/")
 def home(request: Request):
-    # Kiểm tra xem khách đã đăng nhập chưa
     username = request.cookies.get("session_user")
-    return templates.TemplateResponse("index.html", {"request": request, "username": username})
+    # 👉 ĐÂY CHÍNH LÀ DÒNG CODE ĐÃ ĐƯỢC SỬA LỖI ĐỂ TƯƠNG THÍCH VỚI BẢN MỚI NHẤT
+    return templates.TemplateResponse(request=request, name="index.html", context={"username": username})
 
 @app.post("/register")
 def register(username: str = Form(...), password: str = Form(...)):
@@ -23,7 +23,6 @@ def register(username: str = Form(...), password: str = Form(...)):
         return HTMLResponse("<h2 style='color:white;text-align:center;margin-top:50px;'>Tài khoản đã tồn tại! <a href='/' style='color:#00ffcc;'>Quay lại</a></h2>")
     
     USERS[username] = password
-    # Đăng ký thành công -> Tự động đăng nhập luôn
     response = RedirectResponse(url="/", status_code=303)
     response.set_cookie(key="session_user", value=username)
     return response
@@ -45,7 +44,6 @@ def logout():
 @app.post("/create-order")
 def create_order(request: Request):
     order_id = f"DH{random.randint(1000, 9999)}"
-    # GIÁ BÁN VÀ TÊN FILE BẠN CHỈNH Ở ĐÂY
     ORDERS[order_id] = {"status": "pending", "amount": 2000, "file": "app_setup.dlack"}
     return {"order_id": order_id}
 
@@ -63,7 +61,7 @@ def download_file(order_id: str):
         file_path = f"protected_files/{order['file']}"
         if os.path.exists(file_path):
             return FileResponse(file_path, filename=order['file'])
-    return HTMLResponse("<h2 style='color:white;text-align:center;'>File không tồn tại! Hãy kiểm tra lại thư mục protected_files.</h2>")
+    return HTMLResponse("<h2 style='color:white;text-align:center;'>File không tồn tại! Hãy kiểm tra lại thư mục.</h2>")
 
 @app.post("/sepay-webhook")
 async def sepay_webhook(request: Request):
