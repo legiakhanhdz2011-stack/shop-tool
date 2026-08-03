@@ -1,0 +1,218 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Gia Khánh Store</title>
+<meta name="description" content="Shop game tự động, nạp tiền và nhận sản phẩm nhanh." />
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=Sora:wght@600;700;800&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="style.css" />
+</head>
+<body>
+  <div class="bg-glow bg-glow-1"></div>
+  <div class="bg-glow bg-glow-2"></div>
+
+  <header class="topbar">
+    <div class="brand">✦ Gia Khánh Store</div>
+    <nav class="navlinks">
+      <a href="#shop">Shop</a>
+      <a href="#" id="navDeposit">Nạp tiền</a>
+      <a href="#" id="navHistory">Đơn hàng</a>
+      <a href="#footer">Hỗ trợ</a>
+    </nav>
+    <div class="topbar-right">
+      <div id="balanceChip" class="chip hidden">💰 <span id="balanceVal">0</span>đ</div>
+      <button id="btnLogin" class="btn btn-outline">Đăng nhập</button>
+      <button id="btnDeposit" class="btn btn-primary hidden">Nạp tiền</button>
+      <button id="btnHistory" class="btn btn-ghost hidden">Lịch sử</button>
+      <button id="btnAdmin" class="btn btn-ghost hidden">Trang admin</button>
+      <button id="btnLogout" class="btn btn-ghost hidden">Đăng xuất</button>
+    </div>
+  </header>
+
+  <!-- HERO -->
+  <section class="hero">
+    <span class="hero-badge">✅ VERIFIED SELLER · Từ năm 2026</span>
+    <h1>GIA KHÁNH<br /><span class="gradient-text">STORE</span></h1>
+    <p>Anh em ủng hộ shop bên mình nha! Giao hàng tự động, nạp tiền cộng trong tích tắc.</p>
+    <div class="hero-stats">
+      <div class="hero-stat"><b id="statOrders">—</b><span>Đã bán</span></div>
+      <div class="hero-stat"><b>4.9 / 5.0</b><span>Đánh giá</span></div>
+      <div class="hero-stat"><b>&lt; 5 phút</b><span>Phản hồi</span></div>
+    </div>
+    <div class="hero-ctas">
+      <a href="#shop" class="btn btn-primary">Vào Shop Ngay</a>
+      <button id="heroDepositBtn" class="btn btn-outline">Nạp Tiền</button>
+    </div>
+  </section>
+
+  <!-- ĐÁNH GIÁ -->
+  <section class="testimonials">
+    <h2>Anh Em Nói Gì?</h2>
+    <p class="section-sub">Đánh giá thực từ khách hàng</p>
+    <div class="marquee">
+      <div class="marquee-track" id="marqueeTrack"></div>
+    </div>
+  </section>
+
+  <!-- HOẠT ĐỘNG GẦN ĐÂY -->
+  <section class="activity">
+    <h2>Hoạt Động Gần Đây</h2>
+    <div class="activity-grid">
+      <div class="activity-col">
+        <div class="activity-col-title"><span class="live-dot"></span> Lịch Sử Nạp Tiền</div>
+        <div id="activityDeposits" class="activity-list"><p class="hint">Đang tải...</p></div>
+      </div>
+      <div class="activity-col">
+        <div class="activity-col-title"><span class="live-dot"></span> Lịch Sử Mua Hàng Gần Đây</div>
+        <div id="activityOrders" class="activity-list"><p class="hint">Đang tải...</p></div>
+      </div>
+    </div>
+  </section>
+
+  <!-- SHOP -->
+  <main class="shop" id="shop">
+    <h2>🛒 Sản phẩm nổi bật</h2>
+    <div id="productGrid" class="grid"></div>
+  </main>
+
+  <!-- TRUST / STATS -->
+  <section class="trust">
+    <h2>Cảm Ơn Anh Em Đã Tin Tưởng</h2>
+    <p class="section-sub">Shop luôn cam kết mang đến sản phẩm chất lượng, giao hàng nhanh chóng và hỗ trợ tận tình 24/7.</p>
+    <div class="trust-grid">
+      <div class="trust-card"><b id="statUsers">—</b><span>Khách Hàng Hài Lòng</span></div>
+      <div class="trust-card"><b id="statProducts">—</b><span>Sản Phẩm Đa Dạng</span></div>
+      <div class="trust-card"><b>12 tháng</b><span>Bảo Hành</span></div>
+      <div class="trust-card"><b>Tức Thì</b><span>Giao Hàng</span></div>
+    </div>
+    <div class="hero-ctas">
+      <a href="#shop" class="btn btn-primary">Mua Ngay</a>
+      <a href="#footer" class="btn btn-outline">Liên Hệ Hỗ Trợ</a>
+    </div>
+  </section>
+
+  <!-- FOOTER -->
+  <footer class="site-footer" id="footer">
+    <div class="footer-grid">
+      <div>
+        <div class="brand">✦ Gia Khánh Store</div>
+        <p class="hint" style="text-align:left; margin-top:8px;">Giao dịch game tự động · An toàn · Instant delivery</p>
+      </div>
+      <div>
+        <h4>Điều hướng</h4>
+        <a href="#shop">Shop</a>
+        <a href="#" id="footerDeposit">Nạp tiền</a>
+        <a href="#footer">Hỗ trợ</a>
+      </div>
+      <div>
+        <h4>Hỗ trợ 24/7</h4>
+        <p class="hint" style="text-align:left;">Liên hệ qua Zalo / Facebook của shop để được hỗ trợ nhanh nhất.</p>
+      </div>
+    </div>
+    <div class="footer-bottom">© 2026 Gia Khánh Store — All rights reserved.</div>
+  </footer>
+
+  <!-- Modal Đăng nhập / Đăng ký -->
+  <div id="authModal" class="modal hidden">
+    <div class="modal-box">
+      <button class="modal-close" data-close="authModal">✕</button>
+      <div class="tabs">
+        <button class="tab active" data-tab="login">Đăng nhập</button>
+        <button class="tab" data-tab="register">Đăng ký</button>
+      </div>
+      <form id="loginForm" class="tab-panel active">
+        <label>Tên đăng nhập</label>
+        <input type="text" id="loginUsername" required autocomplete="username" />
+        <label>Mật khẩu</label>
+        <input type="password" id="loginPassword" required autocomplete="current-password" />
+        <label class="checkbox-row">
+          <input type="checkbox" id="loginRemember" checked />
+          <span>Ghi nhớ đăng nhập trên thiết bị này</span>
+        </label>
+        <p class="error" id="loginError"></p>
+        <button class="btn btn-primary full" type="submit">Đăng nhập</button>
+      </form>
+      <form id="registerForm" class="tab-panel">
+        <label>Tên đăng nhập</label>
+        <input type="text" id="regUsername" required autocomplete="username" />
+        <label>Số điện thoại</label>
+        <input type="text" id="regPhone" autocomplete="tel" />
+        <label>Mật khẩu</label>
+        <input type="password" id="regPassword" required autocomplete="new-password" />
+        <label class="checkbox-row">
+          <input type="checkbox" id="regRemember" checked />
+          <span>Ghi nhớ đăng nhập trên thiết bị này</span>
+        </label>
+        <p class="error" id="registerError"></p>
+        <button class="btn btn-primary full" type="submit">Đăng ký</button>
+      </form>
+    </div>
+  </div>
+
+  <!-- Modal Nạp tiền -->
+  <div id="depositModal" class="modal hidden">
+    <div class="modal-box">
+      <button class="modal-close" data-close="depositModal">✕</button>
+      <div id="depositStep1">
+        <h2>💳 Nạp tiền</h2>
+        <label>Số tiền muốn nạp (đ)</label>
+        <input type="number" id="depositAmount" min="1000" step="1000" placeholder="VD: 50000" />
+        <button id="btnCreateDeposit" class="btn btn-primary full">Tạo mã QR</button>
+      </div>
+      <div id="depositStep2" class="hidden">
+        <h2>📲 Quét mã để chuyển khoản</h2>
+        <div class="qr-frame">
+          <img id="depositQr" class="qr-img" alt="QR chuyển khoản" />
+        </div>
+        <div class="bank-info">
+          <div><span>Ngân hàng</span><b id="bankName"></b></div>
+          <div><span>Số tài khoản</span><b id="bankAccount"></b></div>
+          <div><span>Chủ tài khoản</span><b id="bankOwner"></b></div>
+          <div><span>Số tiền</span><b id="depAmountShow"></b></div>
+          <div><span>Nội dung CK (bắt buộc)</span><b id="depCode" class="code"></b></div>
+        </div>
+        <div class="waiting-row">
+          <span class="spinner"></span>
+          <span id="depositWaitStatus">Đang chờ thanh toán... hệ thống sẽ tự cộng tiền khi nhận được chuyển khoản đúng nội dung.</span>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Modal Lịch sử giao dịch -->
+  <div id="historyModal" class="modal hidden">
+    <div class="modal-box" style="max-width: 480px;">
+      <button class="modal-close" data-close="historyModal">✕</button>
+      <h2>🧾 Lịch sử giao dịch</h2>
+      <div id="historyList" class="history-list"></div>
+    </div>
+  </div>
+
+  <!-- Modal Thành công (mua hàng / nạp tiền) -->
+  <div id="successModal" class="modal hidden">
+    <div class="modal-box success-box">
+      <button class="modal-close" data-close="successModal">✕</button>
+      <div class="success-check">
+        <svg viewBox="0 0 52 52"><circle class="check-circle" cx="26" cy="26" r="24" fill="none"/><path class="check-mark" fill="none" d="M14 27l7 7 17-17"/></svg>
+      </div>
+      <h2 id="successTitle">Thành công!</h2>
+      <p id="successSubtitle" class="hint"></p>
+      <div id="successItemBox" class="success-item-box hidden">
+        <span class="key-label">Sản phẩm của bạn</span>
+        <div class="key-row">
+          <span id="successItemMasked" class="key-masked">••••••••••••••••</span>
+          <button id="successRevealBtn" class="btn btn-ghost small-btn">👁 Hiện</button>
+          <button id="successCopyBtn" class="btn btn-ghost small-btn hidden">📋 Copy</button>
+        </div>
+        <p class="hint" style="margin-top:8px;">Bạn luôn có thể xem lại trong mục "Lịch sử"</p>
+      </div>
+      <button class="btn btn-primary full" data-close="successModal">Đã hiểu</button>
+    </div>
+  </div>
+
+  <script src="app.js"></script>
+</body>
+</html>
