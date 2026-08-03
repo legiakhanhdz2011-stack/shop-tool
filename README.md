@@ -52,11 +52,20 @@ Khi nạp tiền để mua thẳng 1 sản phẩm (số dư không đủ lúc b�
 web sẽ tự động gắn giao dịch nạp tiền đó với sản phẩm — khi tiền về, hệ thống
 **tự trừ tiền và giao hàng ngay lập tức**, không cần thao tác gì thêm.
 
-## 3. Quản lý sản phẩm (trang admin)
+## 3. Quản lý sản phẩm & giá sỉ cho "Người bán" (trang admin)
 
 Vào `/admin.html` (đăng nhập bằng tài khoản có role admin). Mỗi sản phẩm có
 một ô "Kho hàng" — mỗi dòng là 1 tài khoản/mã sẽ được giao **lần lượt** cho
-khách khi có người mua (giao xong thì dòng đó biến mất khỏi kho).
+khách khi có người mua (giao xong thì dòng đó biến mất khỏi kho). Có thể tải
+lên từ file thay vì gõ tay.
+
+**Mô hình "Người bán":** Người bán KHÔNG có trang riêng để tự đăng sản phẩm.
+Trong mục "Quản lý quyền Người bán" ở trang admin, bạn cấp quyền cho 1 tài
+khoản → khi tài khoản đó đăng nhập và mua sản phẩm bạn treo sẵn, họ sẽ được
+tính **giá sỉ** (ô "Giá sỉ" khi tạo/sửa sản phẩm, để trống nếu sản phẩm đó
+không bán sỉ) thay vì giá bán lẻ. Hàng nhận về nằm trong "Lịch sử giao dịch"
+của họ như một khách mua bình thường — họ tự mang đi bán lại ở kênh khác,
+không bán chung trên web này.
 
 ## 4. Đưa web lên internet (deploy)
 
